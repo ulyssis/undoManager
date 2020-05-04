@@ -13,7 +13,8 @@ public class Demo {
 		UndoFactory undoFactory = new UndoFactory();
 		Undo undo = (Undo) undoFactory.createUndoManager(simpleText, bufferSize);
 		
-		System.out.println("-----------test 1:\nafter adding one change:\n");
+		System.out.println("------ test 1 ------\n");
+		System.out.println("Do an Edit:\n");
 
 		// Make a change to the simpleText.
 		editDescription = new EditDescription(TypeOfChange.insert, 0, "hello", 0, 10);
@@ -29,6 +30,13 @@ public class Demo {
 		
 		// go wrong here.
 		undo.canUndo();
+		
+		System.out.println("Do an Edit:\n");
+
+		// Make a change to the simpleText.
+		editDescription = new EditDescription(TypeOfChange.insert, 0, "hello", 0, 10);
+		
+		undo.canRedo();
 		
 		// Make a change to the simpleText.
 		editDescription = new EditDescription(TypeOfChange.insert, 0, "hello", 0, 10);

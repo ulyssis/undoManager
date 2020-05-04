@@ -29,6 +29,9 @@ public class Undo implements UndoManager {
 	
 	public void recordChange(EditDescription editDescription) throws InterruptedException{
 		ringBufferUndo.add(editDescription);
+		while(ringBufferRedo.size() > 0) {
+			ringBufferRedo.remove();
+		}
 	}
 	
 	
