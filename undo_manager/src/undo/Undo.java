@@ -4,53 +4,100 @@
 
 package undo;
 
-import com.sun.corba.se.impl.encoding.BufferQueue;
-import com.sun.corba.se.impl.encoding.ByteBufferWithInfo;
-
 /**
  * @author max
  *
  */
 public class Undo implements UndoManager {
-
-	Change change;
-	BufferQueue bufferUndo;
-	BufferQueue bufferRedo;
 	
-	@Override
-	public void registerChange(Change change) {
-		// TODO check the convert!
-		ByteBufferWithInfo info = (ByteBufferWithInfo) change;
-		bufferUndo.push(info);
+	RingBuffer<EditDescription> ringBufferUndo;
+	RingBuffer<EditDescription> ringBufferRedo;
+	SimpleText simpleText;
+	
+	
+	public Undo(Document doc, int bufferSizes) {
+		ringBufferUndo = new RingBuffer<EditDescription>(bufferSizes);
+		ringBufferRedo = new RingBuffer<EditDescription>(bufferSizes);
+		simpleText = (SimpleText) doc;
 	}
+
+	@Override
+	public void registerChange(Change change){
+		// TODO check the convert!
+		
+	}
+	
+	public void recordChange(EditDescription editDescription) throws InterruptedException{
+		ringBufferUndo.add(editDescription);
+	}
+	
+	
 
 	@Override
 	public boolean canUndo() {
-	if(bufferUndo.size() != 0) {
+	if(ringBufferUndo.size() != 0) {
 		return true;
 	}else {
-		return false;
+		throw new IllegalStateException("change cannot be applied!");
+		}
 	}
-	}
-
+	
 	@Override
 	public void undo() {
-		if(bufferUndo.size() != 0) {
-			ByteBufferWithInfo info = bufferUndo.dequeue();
-			bufferRedo.push(info);
+		if(canUndo()) {
+			//ByteBufferWithInfo info = ringBufferUndo.dequeue();
+			EditDescription editDescription = new EditDescription(); 
+			try {
+				editDescription = ringBufferUndo.peek();
+				Edit edit = new Edit(simpleText, editDescription);
+				edit.apply(simpleText);
+				
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				ringBufferUndo.remove();
+				ringBufferRedo.add(editDescription);
+				
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+	@Override
+	public boolean canRedo() {
+		if(ringBufferRedo.size() != 0) {
+			return true;
+		}else {
+			throw new IllegalStateException("change cannot be applied!");
 		}
 	}
 
 	@Override
-	public boolean canRedo() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public void redo() {
-		// TODO Auto-generated method stub
-
+		if(canRedo()) {
+			//ByteBufferWithInfo info = ringBufferUndo.dequeue();
+			EditDescription editDescription = new EditDescription(); 
+			try {
+				editDescription = ringBufferRedo.peek();
+				Edit edit = new Edit(simpleText, editDescription);
+				edit.revert(simpleText);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				ringBufferRedo.remove();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

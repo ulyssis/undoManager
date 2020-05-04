@@ -6,23 +6,15 @@ public class Demo {
 		// TODO Auto-generated method stub
 		
 		
-		SimpleText text = new SimpleText();
+		SimpleText simpleText = new SimpleText();
 		int bufferSize = 32;
-		
+
 		UndoFactory undoFactory = new UndoFactory();
-		Undo undo = (Undo) undoFactory.createUndoManager(text, bufferSize);
+		Undo undo = (Undo) undoFactory.createUndoManager(simpleText, bufferSize);
+		
+		undo.canUndo();
 		
 		
-		EditAction editAction = new EditAction();
-		editAction.createDeletion(0, "Hello!", 2, 3);
-		
-		Edit edit = new Edit(text);
-		edit.apply(text);
-		
-		
-		if(undo.canRedo()) {
-			undo.registerChange(edit);
-		}
 		
 	}
 

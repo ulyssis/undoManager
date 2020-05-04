@@ -14,6 +14,7 @@ public interface UndoManager {
 	 * with the one provided to this method.
 	 * 
 	 * @param change The change to register.
+	 * @throws InterruptedException 
 	 */
 	public void registerChange(Change change);
 	
