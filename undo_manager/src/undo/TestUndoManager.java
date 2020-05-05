@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  * @author max
  *
  */
-public class UndoTest {
+public class TestUndoManager {
 
 	SimpleText simpleText = new SimpleText();
 	int bufferSize = 5;
