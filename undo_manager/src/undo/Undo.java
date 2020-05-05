@@ -3,21 +3,20 @@
  */
 
 package undo;
-
 /**
  * @author max
  *
  */
 public class Undo implements UndoManager {
 	
-	RingBuffer<EditDescription> ringBufferUndo;
-	RingBuffer<EditDescription> ringBufferRedo;
+	LIFOQueueLimitedSize<EditDescription> LIFOQueueUndo;
+	LIFOQueueLimitedSize<EditDescription> LIFOQueueRedo;
 	SimpleText simpleText;
 	
 	
 	public Undo(Document doc, int bufferSizes) {
-		ringBufferUndo = new RingBuffer<EditDescription>(bufferSizes);
-		ringBufferRedo = new RingBuffer<EditDescription>(bufferSizes);
+		LIFOQueueUndo = new LIFOQueueLimitedSize<EditDescription>(bufferSizes);
+		LIFOQueueRedo = new LIFOQueueLimitedSize<EditDescription>(bufferSizes);
 		simpleText = (SimpleText) doc;
 	}
 
@@ -28,18 +27,16 @@ public class Undo implements UndoManager {
 	
 	public void recordChange(EditDescription editDescription) throws InterruptedException{
 		System.out.print("One Edit is added into buffer.\n"); 
-		ringBufferUndo.add(editDescription);
+		LIFOQueueUndo.add(editDescription);
 		
-		while(ringBufferRedo.size() > 0) {
-			ringBufferRedo.remove();
-		}
+		LIFOQueueRedo.clear();
 	}
 	
 	
 
 	@Override
 	public boolean canUndo() {
-	if(ringBufferUndo.size() > 0) {
+	if(LIFOQueueUndo.size() > 0) {
 		System.out.print("Undo can be done, in case you want to make an undo.\n"); 
 		return true;
 	}else {
@@ -52,23 +49,22 @@ public class Undo implements UndoManager {
 	@Override
 	public void undo() {
 		if(canUndo()) {
-			try {
-				EditDescription editDescription = ringBufferUndo.peek();
-				Edit edit = new Edit(simpleText, editDescription);
-				edit.apply(simpleText);
-				ringBufferUndo.remove();
-				ringBufferRedo.add(editDescription);
-				System.out.print("Undo is made! The undone content is " + editDescription.s +"\n"); 
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			EditDescription editDescription;
+			editDescription = LIFOQueueUndo.pollLast();
+			Edit edit = new Edit(simpleText, editDescription);
+			edit.apply(simpleText);
+			LIFOQueueRedo.add(editDescription);
+			System.out.print("Undo is made! The undone content is " + editDescription.s +"\n");
+		}else {
+			throw new IllegalStateException("undoBuffer is empty!");
 		}
+		
 	}
 
 
 	@Override
 	public boolean canRedo() {
-		if(ringBufferRedo.size() != 0) {
+		if(LIFOQueueRedo.size() != 0) {
 			System.out.print("Redo can be done, in case you want to make a Redo.\n"); 
 			return true;
 		}else {
@@ -81,18 +77,23 @@ public class Undo implements UndoManager {
 	@Override
 	public void redo() {
 		if(canRedo()) {
-				try {
-					EditDescription editDescription = ringBufferRedo.peek();
-					Edit edit = new Edit(simpleText, editDescription);
-					edit.revert(simpleText);
-					ringBufferRedo.remove();
-					ringBufferUndo.add(editDescription);
-					System.out.print("Redo is made! The recovered content is " + editDescription.s + "\n"); 
-
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			EditDescription editDescription;
+			editDescription = LIFOQueueRedo.pollLast();
+			Edit edit = new Edit(simpleText, editDescription);
+			edit.revert(simpleText);
+			LIFOQueueUndo.add(editDescription);
+			System.out.print("Redo is made! The recovered content is " + editDescription.s + "\n");
+		}else {
+			throw new IllegalStateException("redoBuffer is empty!");
 		}
 	}
+	
+	public void clearUndoBuffer() {
+		LIFOQueueUndo.clear();
+	}
+
+	public void clearRedoBuffer() {
+		LIFOQueueRedo.clear();
+	}
+
 }
