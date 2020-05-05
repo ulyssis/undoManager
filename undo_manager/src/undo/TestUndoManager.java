@@ -24,8 +24,10 @@ public class TestUndoManager {
 	public void testBasicFunctions() throws Exception {
 //		fail("Not yet implemented");
 		
-		System.out.println("------ test 1 ------\n");
-		System.out.println("Test specification: One Edit is made to the doc, undo is available, redo is not:\n");
+		System.out.println("\n------ test 1 ------\n");
+		System.out.println("Test specification: \n"
+				+ "Step 1: One Edit is made to the doc, "
+				+ "Step 2: undo is available, redo is not:\n");
 
 		// Make a change to the simpleText.
 		editDescription = new EditDescription(TypeOfChange.insert, 0, "hello", 0, 10);
@@ -47,8 +49,12 @@ public class TestUndoManager {
 	@Test
 	public void testRedoAfterNewEdit() throws Exception {
 		
-		System.out.println("\n\n------ test 2 ------\n");
-		System.out.println("Test specification: Redo is not possible after a new edit is made to the doc.\n");
+		System.out.println("\n------ test 2 ------\n");
+		System.out.println("Test specification: "
+				+ "Step 1: One Edit is made to the doc"
+				+ "Step 2: undo the edit, Redo can be done"
+				+ "Step 3: One Edit is made to the doc"
+				+ "Step 4: Redo is not available\n");
 		
 		// Make a change to the simpleText.
 		editDescription = new EditDescription(TypeOfChange.insert, 0, "hello", 0, 10);
