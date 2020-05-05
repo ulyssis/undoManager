@@ -24,11 +24,12 @@ public class Undo implements UndoManager {
 	@Override
 	public void registerChange(Change change){
 		// TODO check the convert!
-		
 	}
 	
 	public void recordChange(EditDescription editDescription) throws InterruptedException{
+		System.out.print("One Edit is added into buffer.\n"); 
 		ringBufferUndo.add(editDescription);
+		
 		while(ringBufferRedo.size() > 0) {
 			ringBufferRedo.remove();
 		}
@@ -57,7 +58,7 @@ public class Undo implements UndoManager {
 				edit.apply(simpleText);
 				ringBufferUndo.remove();
 				ringBufferRedo.add(editDescription);
-				System.out.print("Undo is made!\n"); 
+				System.out.print("Undo is made! The undone content is " + editDescription.s +"\n"); 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -86,7 +87,7 @@ public class Undo implements UndoManager {
 					edit.revert(simpleText);
 					ringBufferRedo.remove();
 					ringBufferUndo.add(editDescription);
-					System.out.print("Redo is made!\n"); 
+					System.out.print("Redo is made! The recovered content is " + editDescription.s + "\n"); 
 
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
